@@ -5,218 +5,774 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Domino Pokers ar Gemini</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
         
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #0f3d1b;
-            background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 60%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            background-image: 
+                radial-gradient(circle at 20% 50%, #1a1a2e 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, #16213e 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, #0f3460 0%, transparent 50%);
             color: #e2e8f0;
             user-select: none;
             overflow-x: hidden;
             padding: 1rem;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 100%),
+                radial-gradient(ellipse at top, transparent 0%, rgba(0,0,0,0.4) 100%);
+            pointer-events: none;
+            z-index: 1;
         }
 
         .domino-back {
-            background-color: #1a202c;
+            background-color: #1a1a1a;
             background-image: 
-                linear-gradient(135deg, #2d3748 25%, transparent 25%), 
-                linear-gradient(225deg, #2d3748 25%, transparent 25%),
-                linear-gradient(45deg, #2d3748 25%, transparent 25%),
-                linear-gradient(315deg, #2d3748 25%, #1a202c 25%);
+                linear-gradient(135deg, rgba(45,55,72,0.5) 25%, transparent 25%), 
+                linear-gradient(225deg, rgba(45,55,72,0.5) 25%, transparent 25%),
+                linear-gradient(45deg, rgba(45,55,72,0.5) 25%, transparent 25%),
+                linear-gradient(315deg, rgba(45,55,72,0.5) 25%, rgba(26,26,26,0.5) 25%);
             background-position: 8px 0, 8px 0, 0 0, 0 0;
             background-size: 8px 8px;
             background-repeat: repeat;
-            border: 2px solid #a0aec0;
+            border: 1px solid rgba(255,255,255,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .domino-back::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, 
+                transparent 40%, 
+                rgba(99,179,237,0.05) 50%, 
+                transparent 60%
+            );
+            pointer-events: none;
+        }
+
+        /* Stili domino ar aizmugures klasi */
+        .domino.domino-back {
+            background-color: #1a1a1a !important;
+            background-image: 
+                linear-gradient(135deg, rgba(45,55,72,0.5) 25%, transparent 25%), 
+                linear-gradient(225deg, rgba(45,55,72,0.5) 25%, transparent 25%),
+                linear-gradient(45deg, rgba(45,55,72,0.5) 25%, transparent 25%),
+                linear-gradient(315deg, rgba(45,55,72,0.5) 25%, #1a1a1a 25%) !important;
+            background-position: 8px 0, 8px 0, 0 0, 0 0;
+            background-size: 8px 8px;
+            background-repeat: repeat;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .domino {
-            width: 48px; height: 96px; background-color: #f7fafc;
-            border: 2px solid #a0aec0; border-radius: 8px;
-            display: flex; flex-direction: column; justify-content: space-around;
-            align-items: center; padding: 4px; margin: 4px;
-            cursor: pointer; transition: all 0.2s ease-in-out;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+            width: 48px; 
+            height: 96px; 
+            background: linear-gradient(145deg, #ffffff 0%, #f0f0f0 100%);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 6px;
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-around;
+            align-items: center; 
+            padding: 4px; 
+            margin: 4px;
+            cursor: pointer; 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 2px 4px rgba(0,0,0,0.1),
+                0 8px 16px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
         }
+
+        .domino::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(255,255,255,0.2) 50%,
+                transparent 70%
+            );
+            transform: rotate(45deg);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+        }
+        
         .domino:hover:not(.disabled) {
-            transform: translateY(-5px) scale(1.05);
-            border-color: #f6e05e;
+            transform: translateY(-6px);
+            box-shadow: 
+                0 8px 16px rgba(0,0,0,0.2),
+                0 16px 32px rgba(0,0,0,0.15);
         }
-        .domino.disabled { cursor: not-allowed; opacity: 0.6; background-color: #a0aec0; }
+
+        .domino:hover:not(.disabled)::before {
+            opacity: 1;
+            right: 150%;
+        }
+        
+        .domino.trump {
+            background: linear-gradient(145deg, #ffd700 0%, #ffed4e 100%);
+            box-shadow: 
+                0 2px 4px rgba(255,215,0,0.2),
+                0 8px 16px rgba(255,215,0,0.2);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .domino.trump::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(45deg, #ffd700, #fff59d, #ffd700);
+            border-radius: 6px;
+            opacity: 0.3;
+            z-index: -1;
+            filter: blur(4px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .domino.disabled { 
+            cursor: not-allowed; 
+            opacity: 0.4; 
+            background: #6b7280;
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
         .domino-side { width: 80px; height: 40px; flex-direction: row; }
         .domino-side .domino-half { width: 50%; height: 100%; }
-        .domino-side .domino-divider { width: 2px; height: 80%; }
+        .domino-side .domino-divider { width: 1px; height: 80%; }
         
         .domino-half {
-            width: 100%; height: 50%; display: grid;
-            grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
-            padding: 3px; gap: 1px;
-        }
-        .domino-divider { width: 80%; height: 2px; background-color: #4a5568; align-self: center; }
-        .dot { width: 100%; height: 100%; border-radius: 50%; background-color: #2d3748; transform: scale(0.65); }
-
-        .player-area {
-            min-height: 140px; border-radius: 10px; padding: 10px;
-            transition: all 0.3s ease; position: relative;
-            border: 2px solid transparent;
-        }
-        .active-player {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-color: #63b3ed;
-            box-shadow: 0 0 20px rgba(99, 179, 237, 0.5);
+            width: 100%; 
+            height: 50%; 
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); 
+            grid-template-rows: repeat(3, 1fr);
+            padding: 3px; 
+            gap: 1px;
         }
         
-        @keyframes blink-border {
-            50% { border-color: #f6e05e; box-shadow: 0 0 20px rgba(246, 224, 94, 0.7); }
+        .domino-divider { 
+            width: 80%; 
+            height: 1px; 
+            background: linear-gradient(90deg, transparent, #d1d5db, transparent);
+            align-self: center; 
         }
+        
+        .dot { 
+            width: 100%; 
+            height: 100%; 
+            border-radius: 50%; 
+            background: radial-gradient(circle at 30% 30%, #4a4a4a, #1a1a1a);
+            transform: scale(0.65);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .player-area {
+            min-height: 140px; 
+            border-radius: 12px; 
+            padding: 10px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+            position: relative;
+            border: 1px solid transparent;
+            background: rgba(255,255,255,0.02);
+            backdrop-filter: blur(10px);
+        }
+        
+        .active-player {
+            background: rgba(99, 179, 237, 0.1);
+            border-color: rgba(99, 179, 237, 0.3);
+            box-shadow: 
+                inset 0 0 20px rgba(99, 179, 237, 0.1),
+                0 0 40px rgba(99, 179, 237, 0.1);
+        }
+
+        .active-player::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(45deg, transparent, rgba(99, 179, 237, 0.3), transparent);
+            border-radius: 12px;
+            opacity: 0;
+            animation: active-sweep 3s linear infinite;
+        }
+
+        @keyframes place-subtle {
+            0% { 
+                transform: translateY(-20px) scale(0.95);
+                opacity: 0;
+            }
+            100% { 
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+        
         .turn-starter-indicator {
-            animation: blink-border 1.5s ease-in-out infinite;
+            border-color: rgba(246, 224, 94, 0.4);
+            background: rgba(246, 224, 94, 0.05);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .active-player.turn-starter-indicator { animation: none; }
 
         .table-area {
             min-height: 140px; 
-            border: 4px ridge #8c6b48; border-radius: 10px;
-            display: flex; flex-wrap: wrap; 
-            justify-content: center; align-items: center; gap: 8px;
-            padding: 10px;
-            background-color: #165c2a; box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 8px;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .table-area::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.5) 100%),
+                conic-gradient(
+                    from 0deg at 50% 50%,
+                    rgba(99, 179, 237, 0.03) 0deg,
+                    transparent 60deg,
+                    transparent 180deg,
+                    rgba(159, 122, 234, 0.03) 240deg,
+                    transparent 360deg
+                );
+            animation: table-rotate 30s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes table-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
         
         .trick-domino-container {
-            transition: all 0.5s ease;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             align-items: center;
         }
+
+        .trick-domino-container .domino {
+            animation: place-subtle 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes place-subtle {
+            0% { 
+                transform: translateY(-30px) scale(0.9);
+                opacity: 0;
+            }
+            60% {
+                transform: translateY(3px) scale(1.02);
+                opacity: 1;
+            }
+            100% { 
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+        
         .trick-domino-owner {
-            font-size: 11px;
-            background-color: rgba(0, 0, 0, 0.6);
-            color: #fff;
-            padding: 1px 4px;
+            font-size: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: rgba(255,255,255,0.7);
+            padding: 2px 6px;
             border-radius: 4px;
             white-space: nowrap;
-            margin-top: 2px;
+            margin-top: 4px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(10px);
         }
+        
         .winning-domino .domino {
-            transform: scale(1.1) !important;
-            box-shadow: 0 0 25px 5px #f6e05e;
-            border-color: #f6e05e;
+            transform: scale(1.05) !important;
+            box-shadow: 
+                0 0 0 2px rgba(246, 224, 94, 0.5),
+                0 4px 20px rgba(246, 224, 94, 0.3);
             z-index: 10;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
 
         .modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.75); display: flex;
-            justify-content: center; align-items: center; z-index: 100;
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); 
+            display: flex;
+            justify-content: center; 
+            align-items: center; 
+            z-index: 100;
+            backdrop-filter: blur(8px);
+            animation: modal-fade-in 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        @keyframes modal-fade-in {
+            from { 
+                opacity: 0;
+                backdrop-filter: blur(0px);
+            }
+            to { 
+                opacity: 1;
+                backdrop-filter: blur(8px);
+            }
+        }
+        
         .modal-content {
-            background-color: #2d3748; padding: 20px 30px 30px 30px; border-radius: 15px;
-            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            border: 1px solid #4a5568; max-width: 90%; width: 600px; position: relative;
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            max-width: 90%; 
+            width: 600px; 
+            position: relative;
+            backdrop-filter: blur(20px);
+            animation: modal-slide-in 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        @keyframes modal-slide-in {
+            from { 
+                transform: translateY(-30px) scale(0.95); 
+                opacity: 0; 
+            }
+            to { 
+                transform: translateY(0) scale(1); 
+                opacity: 1; 
+            }
+        }
+        
+        .modal-content {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            max-width: 90%; 
+            width: 600px; 
+            position: relative;
+            backdrop-filter: blur(20px);
+        }
+        
         .btn {
-            background-color: #4299e1; color: white; padding: 10px 20px;
-            border-radius: 8px; border: none; cursor: pointer;
-            transition: all 0.2s; font-weight: bold;
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white; 
+            padding: 12px 24px;
+            border-radius: 8px; 
+            border: none; 
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
         }
-        .btn:hover:not(:disabled) { background-color: #3182ce; }
-        .btn:disabled { background-color: #a0aec0; cursor: not-allowed; }
-        .btn-sm { padding: 5px 10px; font-size: 0.875rem; }
+        
+        .btn:hover:not(:disabled) { 
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            transition: transform 0.1s;
+        }
+        
+        .btn:disabled { 
+            background: #4a5568; 
+            cursor: not-allowed; 
+            opacity: 0.5;
+        }
+        
+        .btn-sm { 
+            padding: 6px 12px; 
+            font-size: 13px; 
+        }
         
         .autoplay-controls {
             display: flex;
             align-items: center;
             gap: 8px;
-            background-color: rgba(0,0,0,0.2);
-            padding: 4px;
+            background: rgba(0,0,0,0.4);
+            padding: 8px;
             border-radius: 8px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        
         .speed-btn {
-            background-color: #4a5568;
-            border: 1px solid #718096;
+            background: rgba(74, 85, 104, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        
         .speed-btn.active {
-            background-color: #4299e1;
-            border-color: #63b3ed;
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            border-color: #4299e1;
             color: white;
         }
-        .btn-toggle-on { background-color: #e53e3e; } 
-        .btn-toggle-on:hover { background-color: #c53030; }
+        
+        .btn-toggle-on { 
+            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+        }
 
         .winner-cup {
-            position: absolute; top: 10px; right: 10px; font-size: 50px;
-            animation: cup-pop 0.5s ease-out forwards, cup-glow 2s infinite alternate;
+            position: absolute; 
+            top: 10px; 
+            right: 10px; 
+            font-size: 48px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+            animation: winner-appear 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        @keyframes cup-pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes cup-glow { from { filter: drop-shadow(0 0 5px #f6e05e); } to { filter: drop-shadow(0 0 15px #f6e05e); } }
+
+        @keyframes winner-appear {
+            0% { 
+                transform: scale(0) rotate(-90deg);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.1) rotate(10deg);
+                opacity: 1;
+            }
+            100% { 
+                transform: scale(1) rotate(0);
+                opacity: 1;
+            }
+        }
+        
+        .cpu-comment {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a1a;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .emotion-emoji {
+            font-size: 1.1em;
+            margin-left: 4px;
+            display: inline-block;
+            animation: emotionPop 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes emotionPop {
+            0% { 
+                transform: scale(0);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+            100% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
         
         .lang-switcher {
-            position: absolute; top: 1rem; right: 1rem; display: flex;
-            gap: 0.5rem; background-color: rgba(45, 55, 72, 0.7);
-            padding: 0.5rem; border-radius: 8px; z-index: 50;
-        }
-        .lang-btn {
-            padding: 0.25rem 0.5rem; border: 1px solid #a0aec0;
-            border-radius: 6px; cursor: pointer; transition: all 0.2s; opacity: 0.7;
-        }
-        .lang-btn.active {
-            background-color: #4299e1; border-color: #4299e1; color: white; opacity: 1;
+            position: absolute; 
+            top: 1rem; 
+            right: 1rem; 
+            display: flex;
+            gap: 0.5rem; 
+            background: rgba(0,0,0,0.4);
+            padding: 0.5rem; 
+            border-radius: 8px; 
+            z-index: 50;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: controls-fade-in 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.1s backwards;
         }
         
-        #round-results-body .result-row { padding: 8px; border-bottom: 1px solid #4a5568; }
-        #round-results-body .result-row:last-child { border-bottom: none; }
-        #round-results-body .player-name { font-weight: bold; font-size: 1.1rem; }
-        #round-results-body .bid-info { font-size: 0.9rem; color: #cbd5e0; }
-        #round-results-body .points-calculation { font-size: 1.2rem; font-weight: bold; }
+        .lang-btn {
+            padding: 0.3rem 0.6rem; 
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px; 
+            cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            background: transparent;
+            color: rgba(255,255,255,0.6);
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .lang-btn.active {
+            background: rgba(66, 153, 225, 0.2);
+            border-color: #4299e1;
+            color: #63b3ed;
+        }
+        
+        #round-results-body .result-row { 
+            padding: 12px; 
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        #round-results-body .result-row:hover {
+            background-color: rgba(255,255,255,0.02);
+        }
+        
+        #round-results-body .result-row:last-child { 
+            border-bottom: none; 
+        }
+        
+        #round-results-body .player-name { 
+            font-weight: 600; 
+            font-size: 1.1rem; 
+            color: #e2e8f0;
+        }
+        
+        #round-results-body .bid-info { 
+            font-size: 0.9rem; 
+            color: rgba(255,255,255,0.5);
+        }
+        
+        #round-results-body .points-calculation { 
+            font-size: 1.2rem; 
+            font-weight: 600;
+            color: #f6e05e;
+        }
 
-        .gemini-btn { background-color: #9f7aea; border-color: #805ad5; }
-        .gemini-btn:hover:not(:disabled) { background-color: #805ad5; }
+        .gemini-btn { 
+            background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);
+        }
+        
+        .gemini-btn:hover:not(:disabled) { 
+            box-shadow: 0 4px 12px rgba(159, 122, 234, 0.4);
+        }
         
         .loader {
-            width: 48px; height: 48px; border: 5px solid #FFF;
-            border-bottom-color: #9f7aea; border-radius: 50%;
-            display: inline-block; box-sizing: border-box;
-            animation: rotation 1s linear infinite;
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%;
+            position: relative;
+            background: conic-gradient(from 0deg, transparent 0%, #9f7aea 100%);
+            animation: rotate 1.5s linear infinite;
         }
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        #help-btn {
+        .loader::before {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border-radius: 50%;
+            background: #1a1a1a;
+        }
+        
+        @keyframes rotate { 
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); } 
+        }
+
+        .top-left-controls {
             position: absolute;
             top: 1rem;
             left: 1rem;
-            width: 40px;
-            height: 40px;
-            background-color: rgba(45, 55, 72, 0.7);
-            border: 1px solid #a0aec0;
-            border-radius: 50%;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #e2e8f0;
-            cursor: pointer;
-            transition: all 0.2s;
+            gap: 0.5rem;
             z-index: 50;
+            animation: controls-fade-in 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        #help-btn:hover { background-color: #4a5568; }
 
-        #rules-modal-content {
+        @keyframes controls-fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .icon-btn {
+            width: 40px; 
+            height: 40px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .icon-btn:hover { 
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.9);
+            border-color: rgba(255,255,255,0.2);
+            transform: scale(1.05);
+        }
+
+        #rules-modal-content, #stats-modal-content {
             text-align: left;
             max-height: 70vh;
             overflow-y: auto;
             padding-right: 15px;
         }
-        #rules-modal-content h3 { font-size: 1.25rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; color: #90cdf4; border-bottom: 1px solid #4a5568; padding-bottom: 0.25rem;}
-        #rules-modal-content h4 { font-size: 1.1rem; font-weight: bold; margin-top: 0.75rem; margin-bottom: 0.25rem; }
-        #rules-modal-content p, #rules-modal-content li { margin-bottom: 0.5rem; color: #cbd5e0; }
-        #rules-modal-content ul { list-style-type: disc; padding-left: 20px; }
+        
+        #rules-modal-content::-webkit-scrollbar,
+        #stats-modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #rules-modal-content::-webkit-scrollbar-track,
+        #stats-modal-content::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+
+        #rules-modal-content::-webkit-scrollbar-thumb,
+        #stats-modal-content::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+
+        #rules-modal-content::-webkit-scrollbar-thumb:hover,
+        #stats-modal-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        #rules-modal-content h3, #stats-modal-content h3 { 
+            font-size: 1.25rem; 
+            font-weight: 600; 
+            margin-top: 1.5rem; 
+            margin-bottom: 0.75rem; 
+            color: #e2e8f0;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        #rules-modal-content h3::after,
+        #stats-modal-content h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(90deg, #4299e1, transparent);
+        }
+        
+        #rules-modal-content h4 { 
+            font-size: 1.1rem; 
+            font-weight: 500; 
+            margin-top: 1rem; 
+            margin-bottom: 0.5rem;
+            color: rgba(255,255,255,0.8);
+        }
+        
+        #rules-modal-content p, 
+        #rules-modal-content li, 
+        #stats-modal-content p { 
+            margin-bottom: 0.5rem; 
+            color: rgba(255,255,255,0.6);
+            line-height: 1.6;
+        }
+        
+        #rules-modal-content ul { 
+            list-style-type: none; 
+            padding-left: 0;
+        }
+
+        #rules-modal-content ul li::before {
+            content: '▸';
+            color: #4299e1;
+            margin-right: 8px;
+        }
+        
+        #stats-modal-content .stat-value { 
+            font-weight: 600; 
+            color: #f6e05e;
+            font-size: 1.1em;
+        }
+
+        /* Noņem nevajadzīgo zaļo malu */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Spēles nosaukuma stili (ja HTML ir elements ar klasi .game-title) */
+        .game-title {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 2rem;
+            letter-spacing: -0.02em;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .game-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #4299e1, transparent);
+        }
     </style>
 </head>
 <body>
-    <button id="help-btn">?</button>
+    <div class="top-left-controls">
+        <button id="help-btn" class="icon-btn" title="Noteikumi">?</button>
+        <button id="stats-btn" class="icon-btn" title="Statistika">📊</button>
+    </div>
 
     <div class="lang-switcher">
         <button id="lang-lv" class="lang-btn active">LV</button>
@@ -297,8 +853,8 @@
                     <div id="scoreboard-body" class="space-y-1"></div>
                 </div>
                 <div id="history-panel" class="mt-4">
-                    <h3 class="text-xl font-bold mb-2 text-center" data-lang-key="lastTrick">Pēdējais Stiķis</h3>
-                    <div id="history-body" class="flex flex-wrap justify-center gap-1 bg-slate-700/50 p-2 rounded min-h-[80px] items-center"></div>
+                    <h3 class="text-xl font-bold mb-2 text-center" data-lang-key="trickHistory">Gājienu Vēsture</h3>
+                    <div id="history-body" class="space-y-2 bg-slate-800/60 p-2 rounded min-h-[100px] items-center"></div>
                 </div>
             </div>
         </div>
@@ -309,6 +865,14 @@
         <div class="modal-content">
             <h2 class="text-2xl mb-4" data-lang-key="howManyRounds">Cik partijas spēlēsiet?</h2>
             <input type="number" id="rounds-input" class="bg-gray-700 text-white p-2 rounded w-full mb-4" value="5" min="1" max="20">
+            <div class="mb-4">
+                <label for="difficulty-select" class="block mb-2 text-sm font-bold" data-lang-key="difficulty">Grūtības līmenis:</label>
+                <select id="difficulty-select" class="bg-gray-700 text-white p-2 rounded w-full">
+                    <option value="easy" data-lang-key="easy">Viegli</option>
+                    <option value="normal" selected data-lang-key="normal">Normāli</option>
+                    <option value="hard" data-lang-key="hard">Grūti</option>
+                </select>
+            </div>
             <button id="start-game-btn" class="btn" data-lang-key="startGame">Sākt spēli</button>
         </div>
     </div>
@@ -361,6 +925,14 @@
         </div>
     </div>
 
+    <div id="stats-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="stats-modal-title" class="text-2xl font-bold mb-4">Jūsu Statistika</h2>
+            <div id="stats-modal-content" class="mb-6"></div>
+            <button id="stats-modal-close-btn" class="btn">Aizvērt</button>
+        </div>
+    </div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     // --- STATE & CONSTANTS ---
@@ -377,6 +949,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let gameState = 'setup';
     let roundState = {};
     let resolveNextRound;
+    let cpuDifficulty = 'normal';
+    let gameStats = { gamesPlayed: 0, wins: 0, totalScore: 0 };
 
     const allDominoes = [];
     for (let i = 0; i <= 6; i++) {
@@ -397,7 +971,44 @@ document.addEventListener('DOMContentLoaded', () => {
           geminiAnalysisBtn = document.getElementById('gemini-analysis-btn'),
           geminiModal = document.getElementById('gemini-modal'),
           rulesModal = document.getElementById('rules-modal'),
-          helpBtn = document.getElementById('help-btn');
+          statsModal = document.getElementById('stats-modal'),
+          helpBtn = document.getElementById('help-btn'),
+          statsBtn = document.getElementById('stats-btn');
+
+    // --- SOUND MANAGER ---
+    const soundManager = {
+        isMuted: false, 
+        synth: new Tone.Synth().toDestination(),
+        clickSynth: new Tone.PluckSynth().toDestination(),
+
+        play(soundName) {
+            if (this.isMuted || !window.Tone) return;
+            try {
+                switch(soundName) {
+                    case 'click': this.clickSynth.triggerAttackRelease("C4", "8n", Tone.now()); break;
+                    case 'shuffle':
+                        const now = Tone.now();
+                        this.clickSynth.triggerAttackRelease("C2", "16n", now);
+                        this.clickSynth.triggerAttackRelease("E2", "16n", now + 0.05);
+                        this.clickSynth.triggerAttackRelease("G2", "16n", now + 0.1);
+                        this.clickSynth.triggerAttackRelease("C2", "16n", now + 0.15);
+                        break;
+                    case 'winGame':
+                        this.synth.triggerAttackRelease("C5", "8n", Tone.now());
+                        this.synth.triggerAttackRelease("E5", "8n", Tone.now() + 0.2);
+                        this.synth.triggerAttackRelease("G5", "4n", Tone.now() + 0.4);
+                        break;
+                    case 'loseGame':
+                        this.synth.triggerAttackRelease("G2", "8n", Tone.now());
+                        this.synth.triggerAttackRelease("E2", "8n", Tone.now() + 0.2);
+                        this.synth.triggerAttackRelease("C2", "4n", Tone.now() + 0.4);
+                        break;
+                }
+            } catch (e) {
+                console.error("Skaņas atskaņošanas kļūda:", e);
+            }
+        }
+    };
 
     // --- RULES & TRANSLATIONS ---
     const rules = {
@@ -413,6 +1024,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p>Katrs spēlētājs pēc kārtas nosola, cik stiķus viņš plāno iegūt (no 0 līdz 7). Solīšana notiek vienā aplī.</p>
                 <h4>3. Izspēle</h4>
                 <p>Spēlētājs, kurš sāk, var likt jebkuru kauliņu. Pārējiem spēlētājiem ir jāseko mastam (jāliek kauliņš ar tādu pašu ciparu), ja tas ir iespējams. Ja mastam sekot nevar, drīkst likt trumpi vai atmest jebkuru citu kauliņu.</p>
+				<p>Ja tiek veikts gājiens ar trumpi, obligāti visiem jāliek trumpis (ja tāds ir). Ja trumpis nav, tad drīkst atmest jebkuru kauliņu.</p>
+				<p>Ja tiek veikts gājiens ar dūzi, obligāti jāliek atbilstošs kauliņš. Ja tāds nav, tad obligāti jāsit ar trumpi. Ja arī trumpis nav, tad drīkst atmest ar jebkuru kauliņu.</p>
+				<p>Ja tiek veikts gājiens ar neitrālu kauliņu piemēram “4-3”, obligāti jāliek pieprasītais kauliņš. Ja pieprasītais kauliņš nav, tad obligāti jāsit ar trumpi. Ja nav nedz pieprasītais, nedz trumpis, tad drīkst atmest ar jebkuru.</p>
                 <h4>Trumpju secība (no spēcīgākā):</h4>
                 <ul><li>0-0, 1-1, 1-6, 1-5, 1-4, 1-3, 1-2, 1-0</li></ul>
                 <h4>Dūžu secība (no spēcīgākā):</h4>
@@ -437,6 +1051,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h4>2. Bidding</h4>
                 <p>Each player bids in turn how many tricks they plan to take (from 0 to 7). There is only one round of bidding.</p>
                 <h4>3. Play</h4>
+				<p>If a move is made with a trump, everyone must play a trump (if they have one). If no trump is available, any tile may be discarded.</p>
+				<p>If a move is made with an ace, the corresponding tile must be played. If such a tile is unavailable, a trump must be played. If no trump is available, any tile may be discarded.</p>
+				<p>If a move is made with a neutral tile, for example “4-3”, the requested tile must be played. If the requested tile is unavailable, a trump must be played. If neither the requested tile nor a trump is available, any tile may be discarded.</p>
                 <p>The lead player can play any tile. Other players must follow suit (play a tile with the same number) if they can. If you cannot follow suit, you may play a trump or discard any other tile.</p>
                 <h4>Trump order (highest first):</h4>
                 <ul><li>0-0, 1-1, 1-6, 1-5, 1-4, 1-3, 1-2, 1-0</li></ul>
@@ -453,7 +1070,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
-    let currentLanguage = 'lv';
     const translations = {
         lv: {
             you: 'Jūs', bid: 'Solīja', taken: 'Paņēma', round: 'Partija', scoreboard: 'Rezultāti', howManyRounds: 'Cik partijas spēlēsiet?',
@@ -465,8 +1081,10 @@ document.addEventListener('DOMContentLoaded', () => {
             winnerIs: (name, score) => `Uzvarētājs ir ${name} ar ${score} punktiem!`, finalScoresTitle: 'Gala Rezultāti:', points: 'punkti',
             roundResultText: (bid, taken) => `Solīja ${bid}, Paņēma ${taken}`, pointsSuffix: 'punkti', suitLead: (suit) => `Jāseko: ${suit}`,
             trumpSuit: 'Trumpji', enableAutoplay: 'Ieslēgt CPU', disableAutoplay: 'Izslēgt CPU',
-            lastTrick: 'Pēdējais Stiķis', noHistory: 'Vēl nav nospēlēts neviens stiķis.', speed: 'Ātrums:',
-            getAdvice: 'Gājiena ieteikums', analyzeRound: 'Analizēt partiju', adviceTitle: 'Gemini padoms', analysisTitle: 'Gemini analīze'
+            trickHistory: 'Gājienu Vēsture', noHistory: 'Vēl nav nospēlēts neviens stiķis.', speed: 'Ātrums:',
+            getAdvice: 'Gājiena ieteikums', analyzeRound: 'Analizēt partiju', adviceTitle: 'Gemini padoms', analysisTitle: 'Gemini analīze',
+            difficulty: 'Grūtības līmenis', easy: 'Viegli', normal: 'Normāli', hard: 'Grūti',
+            statsTitle: 'Jūsu Statistika', gamesPlayed: 'Nospēlētās spēles', wins: 'Uzvaras', totalScore: 'Kopējais punktu skaits'
         },
         en: {
             you: 'You', bid: 'Bid', taken: 'Taken', round: 'Round', scoreboard: 'Scoreboard', howManyRounds: 'How many rounds to play?',
@@ -478,11 +1096,58 @@ document.addEventListener('DOMContentLoaded', () => {
             winnerIs: (name, score) => `The winner is ${name} with ${score} points!`, finalScoresTitle: 'Final Scores:', points: 'points',
             roundResultText: (bid, taken) => `Bid ${bid}, Took ${taken}`, pointsSuffix: 'points', suitLead: (suit) => `Suit to follow: ${suit}`,
             trumpSuit: 'Trumps', enableAutoplay: 'Enable CPU', disableAutoplay: 'Disable CPU',
-            lastTrick: 'Last Trick', noHistory: 'No tricks played yet.', speed: 'Speed:',
-            getAdvice: 'Get Advice', analyzeRound: 'Analyze Round', adviceTitle: 'Gemini Advice', analysisTitle: 'Gemini Analysis'
+            trickHistory: 'Trick History', noHistory: 'No tricks played yet.', speed: 'Speed:',
+            getAdvice: 'Get Advice', analyzeRound: 'Analyze Round', adviceTitle: 'Gemini Advice', analysisTitle: 'Gemini Analysis',
+            difficulty: 'Difficulty Level', easy: 'Easy', normal: 'Normal', hard: 'Hard',
+            statsTitle: 'Your Statistics', gamesPlayed: 'Games Played', wins: 'Wins', totalScore: 'Total Score'
         }
     };
-
+    const cpuComments = {
+        lv: {
+            bidding: {
+                high: ["Šoreiz spēlēšu nopietni!", "Man ir laba roka!", "Es būšu agresīvs.", "Lai sākas cīņa!"],
+                low: ["Jābūt uzmanīgam...", "Hmm, ne pārāk daudz.", "Šoreiz piesardzīgi.", "Redzēs, kas sanāks."],
+                zero: ["Nullīte būs.", "Nevienu nepaņemšu!", "Bloķēšu citus.", "Taktiskā nulle."]
+            },
+            playing: {
+                leadStrong: ["Sāksim ar spēku!", "Šis noteikti paņems!", "Mans labākais gājiens.", "Uzbrūkam!"],
+                leadWeak: ["Paskatīsimies...", "Varbūt kāds pārspēs.", "Sākšu maigi.", "Drošs gājiens."],
+                followWin: ["Paņemšu šo!", "Mans stiķis!", "Neviens nepārspēs.", "Perfekti!"],
+                followLose: ["Lai kāds cits ņem.", "Saglabāšu spēku.", "Pagaidām zaudēju.", "Nav vērts cīnīties."],
+                mustWin: ["Man šis jāpaņem!", "Kritiski svarīgs!", "Nedrīkstu zaudēt!", "Jāvinnē!"],
+                frustrated: ["Ak nē!", "Tas nebija plānā...", "Kāpēc tā?", "Nepatīkami!"]
+            },
+            trickEnd: {
+                won: ["Jā! Paņēmu!", "Kā plānoju!", "Labi sanāca!", "Mans stiķis! 💪"],
+                lost: ["Nu labi...", "Lai viņam paliek.", "Nākamreiz.", "Hmm..."],
+                critical: ["Perfekti!", "Tieši ko vajadzēja!", "Super!", "Plāns strādā! 🎯"],
+                bad: ["Ak nē!", "Tas nav labi!", "Problēmas...", "Vai tiešām? 😰"]
+            }
+        },
+        en: {
+            bidding: {
+                high: ["I'll play seriously!", "Good hand here!", "Going aggressive.", "Let's fight!"],
+                low: ["Need to be careful...", "Hmm, not too much.", "Playing safe.", "We'll see."],
+                zero: ["Going for zero.", "Won't take any!", "Blocking others.", "Tactical nil."]
+            },
+            playing: {
+                leadStrong: ["Starting strong!", "This will win!", "My best move.", "Attack!"],
+                leadWeak: ["Let's see...", "Maybe someone beats it.", "Starting soft.", "Safe play."],
+                followWin: ["Taking this!", "My trick!", "No one beats this.", "Perfect!"],
+                followLose: ["Let others take it.", "Saving strength.", "Losing for now.", "Not worth it."],
+                mustWin: ["Must take this!", "Critical trick!", "Can't lose!", "Need to win!"],
+                frustrated: ["Oh no!", "Not as planned...", "Why?", "Not good!"]
+            },
+            trickEnd: {
+                won: ["Yes! Got it!", "As planned!", "Nice one!", "My trick! 💪"],
+                lost: ["Oh well...", "Keep it.", "Next time.", "Hmm..."],
+                critical: ["Perfect!", "Exactly what I needed!", "Great!", "Plan works! 🎯"],
+                bad: ["Oh no!", "That's bad!", "Problems...", "Really? 😰"]
+            }
+        }
+    };
+	
+    let currentLanguage = 'lv';
     function setLanguage(lang) {
         currentLanguage = lang;
         document.documentElement.lang = lang;
@@ -490,13 +1155,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const key = el.dataset.langKey;
             const translation = translations[lang][key];
             if (translation) {
-                const textNode = Array.from(el.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
-                if (textNode) {
-                    textNode.textContent = ' ' + translation;
+                const textNode = Array.from(el.childNodes).find(node => node.nodeType === Node.TEXT_NODE && node.nodeValue.trim().length > 0);
+                 if (el.tagName === 'OPTION') {
+                    el.textContent = translation;
+                } else if (textNode) {
+                    textNode.textContent = translation;
                 } else if (el.querySelector('span')) {
                     el.querySelector('span').textContent = ' ' + translation;
-                }
-                 else {
+                } else {
                     el.textContent = translation;
                 }
             }
@@ -506,6 +1172,47 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('lang-en').classList.toggle('active', lang === 'en');
         updateAutoplayButton(); 
         updateUI(); 
+    }
+
+    function getRandomComment(category, type) {
+        const comments = cpuComments[currentLanguage][category][type];
+        return comments[Math.floor(Math.random() * comments.length)];
+    }
+
+    function showCPUComment(playerIndex, comment, duration = 3000) {
+        if (!players[playerIndex].isCPU) return;
+        const playerArea = document.getElementById(`player-area-${playerIndex}`);
+        let commentEl = playerArea.querySelector('.cpu-comment');
+        if (!commentEl) {
+            commentEl = document.createElement('div');
+            commentEl.className = 'cpu-comment';
+            playerArea.insertBefore(commentEl, playerArea.firstChild);
+        }
+        commentEl.textContent = comment;
+        commentEl.style.opacity = '1';
+        setTimeout(() => { commentEl.style.opacity = '0'; }, duration);
+    }
+
+    function showPlayerEmotion(playerIndex, emotion) {
+        const playerName = document.getElementById(`player-name-${playerIndex}`);
+        const existingEmoji = playerName.querySelector('.emotion-emoji');
+        if (existingEmoji) existingEmoji.remove();
+
+        const emoji = document.createElement('span');
+        emoji.className = 'emotion-emoji';
+        switch(emotion) {
+            case 'happy': emoji.textContent = ' 😊'; break;
+            case 'sad': emoji.textContent = ' 😔'; break;
+            case 'angry': emoji.textContent = ' 😤'; break;
+            case 'shocked': emoji.textContent = ' 😱'; break;
+            case 'cool': emoji.textContent = ' 😎'; break;
+            case 'thinking': emoji.textContent = ' 🤔'; break;
+        }
+        playerName.appendChild(emoji);
+        setTimeout(() => {
+            emoji.style.opacity = '0';
+            setTimeout(() => emoji.remove(), 500);
+        }, 4000);
     }
 
     // --- DOMINO & GAME LOGIC ---
@@ -643,24 +1350,59 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // HISTORY PANEL REWORK
     function updateHistoryUI() {
         historyBody.innerHTML = '';
-        if (lastTrick.length === 0) {
-            historyBody.textContent = translations[currentLanguage].noHistory;
+        if (!roundState.trickHistory || roundState.trickHistory.length === 0) {
+            const noHistoryEl = document.createElement('p');
+            noHistoryEl.textContent = translations[currentLanguage].noHistory;
+            noHistoryEl.className = 'text-center text-slate-400 p-4';
+            historyBody.appendChild(noHistoryEl);
             return;
         }
-        const winnerPlay = determineTrickWinner(lastTrick);
-        lastTrick.forEach(play => {
+
+        // Paņemam tikai pēdējo gājienu no vēstures
+        const lastTrickData = roundState.trickHistory[roundState.trickHistory.length - 1];
+        const index = roundState.trickHistory.length - 1;
+
+        const trickContainer = document.createElement('div');
+        trickContainer.className = 'p-2 border-b border-slate-700 last:border-b-0';
+
+        const trickHeader = document.createElement('h4');
+        trickHeader.className = 'font-bold text-xs text-slate-300 mb-1 pl-1';
+        trickHeader.textContent = `Stiķis ${index + 1}`;
+        trickContainer.appendChild(trickHeader);
+
+        const playsContainer = document.createElement('div');
+        playsContainer.className = 'flex flex-row justify-center items-start gap-1'; 
+        
+        const winnerPlay = determineTrickWinner(lastTrickData.plays, lastTrickData.trickSuit);
+
+        lastTrickData.plays.forEach(play => {
+            const playContainer = document.createElement('div');
+            playContainer.className = 'flex flex-col items-center text-center w-1/4';
+
             const dominoEl = createDominoElement(play.domino);
-            dominoEl.style.transform = 'scale(0.45)';
-            dominoEl.style.margin = '1px';
+            dominoEl.style.transform = 'scale(0.4)';
+            dominoEl.style.margin = '-12px 0';
+            
             if (winnerPlay && play.playerIndex === winnerPlay.playerIndex) {
-                dominoEl.style.borderColor = '#f6e05e';
-                dominoEl.style.borderWidth = '3px';
+                dominoEl.classList.add('history-domino-winner');
             }
-            historyBody.appendChild(dominoEl);
+
+            const playerNameEl = document.createElement('span');
+            playerNameEl.textContent = players[play.playerIndex].name;
+            playerNameEl.className = 'text-slate-400 text-[10px] mt-2 truncate w-full';
+
+            playContainer.appendChild(dominoEl);
+            playContainer.appendChild(playerNameEl);
+            playsContainer.appendChild(playContainer);
         });
+
+        trickContainer.appendChild(playsContainer);
+        historyBody.appendChild(trickContainer);
     }
+
 
     function updatePlayerHandClickability() {
         const isPlayerTurn = currentPlayerIndex === 3 && gameState === 'playing' && !isPlayerAutoplaying;
@@ -672,29 +1414,101 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /**
-     * UZLABOJUMS: Pievienots Fisher-Yates jaukšanas algoritms.
-     * Šī funkcija sajauc masīva elementus patiesi nejaušā secībā.
-     * @param {Array} array - Masīvs, kas jāsajauc.
-     */
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
-            // Izvēlas nejaušu indeksu no 0 līdz i
             const j = Math.floor(Math.random() * (i + 1));
-            // Apmaina elementus vietām
             [array[i], array[j]] = [array[j], array[i]];
         }
     }
     
+    function countRemainingTrumps() { return trumps.filter(t => !roundState.trumpsPlayed.includes(t)).length; }
+    function countRemainingAces() { return aces.filter(a => !roundState.acesPlayed.includes(a)).length; }
+    function getSuitCount(hand, suit) { return hand.filter(d => d.pips1 === suit || d.pips2 === suit).length; }
+
+    function getPlayerSuitExhaustion(playerIndex, suit) {
+        const plays = roundState.trickHistory || [];
+        for (let trick of plays) {
+            const playerPlay = trick.plays.find(p => p.playerIndex === playerIndex);
+            if (playerPlay && trick.trickSuit === suit && playerPlay.domino.pips1 !== suit && playerPlay.domino.pips2 !== suit) {
+                return true; 
+            }
+        }
+        return false;
+    }
+
+    function analyzeOpponentsBids() {
+        const totalBid = players.reduce((sum, p) => sum + (p.bid || 0), 0);
+        return { totalBid, averageBid: totalBid / 4, isOverbid: totalBid > 7, isUnderbid: totalBid < 7 };
+    }
+
+    function evaluateHandStrength(hand) {
+        let strength = 0;
+        hand.forEach(d => {
+            if (getDominoType(d) === 'trump') strength += (8 - trumps.indexOf(d.id)) * 3;
+            else if (getDominoType(d) === 'ace') {
+                const support = getSuitCount(hand, d.pips1) - 1;
+                let aceValue = (6 - aces.indexOf(d.id)) * 2;
+                if (support === 0) aceValue *= 0.3; else if (support === 1) aceValue *= 0.6; else if (support === 2) aceValue *= 0.85;
+                strength += aceValue;
+            }
+        });
+        for (let suit = 0; suit <= 6; suit++) {
+            const count = getSuitCount(hand, suit);
+            if (count >= 4) strength += (count - 3) * 2;
+            if (count === 1) strength -= 1;
+        }
+        return strength;
+    }
+
+    function determineObjective(player) {
+        const tricksNeeded = player.bid - player.tricksWon;
+        const remainingTricks = 7 - trickNumber + 1;
+        if (player.bid === 0) return 'AVOID_ALL';
+        if (tricksNeeded <= 0) return 'AVOID';
+        if (tricksNeeded >= remainingTricks) return 'MUST_WIN';
+        if (tricksNeeded > remainingTricks * 0.7) return 'NEED_WIN';
+        return 'FLEXIBLE';
+    }
+
+    function analyzeTrick() {
+        const currentWinner = determineTrickWinner(trick, trickSuit);
+        return {
+            expectedWinner: currentWinner ? currentWinner.playerIndex : -1,
+            highCards: trick.filter(t => getDominoRank(t.domino, trickSuit) > 15).length,
+            trumpsPlayed: trick.filter(t => getDominoType(t.domino) === 'trump').length,
+            remainingPlayers: 4 - trick.length
+        };
+    }
+
+    function evaluateTrickValue(player, context) {
+        const tricksNeeded = player.bid - player.tricksWon;
+        const urgency = tricksNeeded / context.remainingTricks;
+        if (urgency >= 1) return 1.0; if (urgency >= 0.8) return 0.8; if (urgency >= 0.6) return 0.6; return 0.4;
+    }
+
+    function recordTrickHistory() {
+        roundState.trickHistory.push({
+            trickNumber: trickNumber,
+            trickSuit: trickSuit,
+            plays: [...trick]
+        });
+    }
+
     // --- GAME FLOW ---
     async function runGame() {
-        const cpuNames = { lv: ["Jānis", "Pēteris", "Andris", "Māris"], en: ["John", "Peter", "Andrew", "Maris"] };
-        const names = cpuNames[currentLanguage].sort(() => 0.5 - Math.random());
-        players.filter(p => p.isCPU).forEach((p, i) => p.name = names[i]);
+        const cpuNames = {
+            lv: { male: ["Jānis", "Pēteris", "Andris", "Māris", "Juris", "Aigars", "Edgars", "Kārlis", "Artūrs", "Rihards"], female: ["Anna", "Līga", "Ilze", "Kristīne", "Laura", "Inga", "Elīna", "Sanita", "Dace", "Zane"] },
+            en: { male: ["John", "Peter", "Andrew", "Mark", "James", "Robert", "Michael", "David", "William", "Richard"], female: ["Mary", "Emma", "Sarah", "Lisa", "Jennifer", "Jessica", "Michelle", "Amanda", "Ashley", "Emily"] }
+        };
+        const allNames = [...cpuNames[currentLanguage].male, ...cpuNames[currentLanguage].female];
+        shuffleArray(allNames);
+        players.filter(p => p.isCPU).forEach((p, i) => p.name = allNames[i]);
+    
         currentRound = 0;
         players.forEach(p => p.score = 0);
-        isPlayerAutoplaying = false; updateAutoplayButton();
-        
+        isPlayerAutoplaying = false; 
+        updateAutoplayButton();
+    
         while(currentRound < totalRounds) {
             currentRound++;
             roundOverModal.classList.add('hidden');
@@ -706,24 +1520,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function startRound() {
         return new Promise(async roundResolve => {
             resolveNextRound = roundResolve; 
-            
             gameState = 'bidding';
             statusMessage.textContent = translations[currentLanguage].shuffling;
+            soundManager.play('shuffle');
             trickNumber = 0; trick = []; trickSuit = null;
-            roundState = { playedDominoes: [], suitsPlayed: { 0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0 } };
+            roundState = { playedDominoes: [], trumpsPlayed: [], acesPlayed: [], trickHistory: [] };
 
             tableArea.innerHTML = '';
             suitInfo.textContent = '';
-            
             players.forEach(p => { p.hand = []; p.bid = null; p.tricksWon = 0; });
             
-            // UZLABOJUMS: Izmanto Fisher-Yates jaukšanas algoritmu
             const shuffledDominoes = [...allDominoes];
             shuffleArray(shuffledDominoes);
-
-            for(let i = 0; i < 28; i++) {
-                players[i % 4].hand.push(shuffledDominoes[i]);
-            }
+            for(let i = 0; i < 28; i++) players[i % 4].hand.push(shuffledDominoes[i]);
             
             dealerIndex = (dealerIndex + 1) % 4;
             currentPlayerIndex = (dealerIndex + 1) % 4;
@@ -745,12 +1554,16 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < 4; i++) {
             const player = players[currentPlayerIndex];
             statusMessage.textContent = translations[currentLanguage].bidding(player.name);
-            players.forEach(p => document.getElementById(`player-area-${p.id}`).classList.remove('active-player'));
+            document.querySelectorAll('.player-area').forEach(el => el.classList.remove('active-player'));
             document.getElementById(`player-area-${player.id}`).classList.add('active-player');
             
             const isAutoplaying = player.id === 3 && isPlayerAutoplaying;
             if (player.isCPU || isAutoplaying) {
                 player.bid = getCPUBid(player);
+				if (player.isCPU) {
+                    let commentType = player.bid >= 4 ? 'high' : (player.bid === 0 ? 'zero' : 'low');
+                    showCPUComment(player.id, getRandomComment('bidding', commentType));
+                }
                 await sleep(1200 / autoplaySpeed);
             } else {
                 player.bid = await getPlayerBid();
@@ -760,10 +1573,9 @@ document.addEventListener('DOMContentLoaded', () => {
             statusMessage.textContent = translations[currentLanguage].bidMade(player.name, player.bid);
             updateUI();
             await sleep(500 / autoplaySpeed);
-            
             currentPlayerIndex = (currentPlayerIndex + 1) % 4;
         }
-        players.forEach(p => document.getElementById(`player-area-${p.id}`).classList.remove('active-player'));
+        document.querySelectorAll('.player-area').forEach(el => el.classList.remove('active-player'));
         currentPlayerIndex = trickStartIndex;
         statusMessage.textContent = translations[currentLanguage].gameStarts(players[currentPlayerIndex].name);
         updateUI();
@@ -812,6 +1624,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (player.isCPU || isAutoplaying) {
                     await sleep((isPlayerAutoplaying ? 800 : 1500) / autoplaySpeed);
                     const moveChoice = getCPUMove(player);
+					if (player.isCPU) {
+                        if (trick.length === 0) {
+                            const isStrongLead = getDominoType(moveChoice.domino) !== 'normal';
+                            showCPUComment(player.id, getRandomComment('playing', isStrongLead ? 'leadStrong' : 'leadWeak'));
+                        } else if (determineObjective(player) === 'MUST_WIN') {
+                            showCPUComment(player.id, getRandomComment('playing', 'mustWin'));
+                        }
+                    }
                     playedDomino = moveChoice.domino;
                     if (trick.length === 0) {
                         trickSuit = getDominoType(playedDomino) === 'trump' ? 'trump' : moveChoice.suitToLead;
@@ -823,12 +1643,13 @@ document.addEventListener('DOMContentLoaded', () => {
                      }
                 }
                 
+                soundManager.play('click');
                 player.hand = player.hand.filter(d => d.originalId !== playedDomino.originalId);
                 trick.push({ domino: playedDomino, playerIndex: currentPlayerIndex });
                 
                 roundState.playedDominoes.push(playedDomino.id);
-                roundState.suitsPlayed[playedDomino.pips1]++;
-                if (playedDomino.pips1 !== playedDomino.pips2) roundState.suitsPlayed[playedDomino.pips2]++;
+                if (getDominoType(playedDomino) === 'trump') roundState.trumpsPlayed.push(playedDomino.id);
+                if (getDominoType(playedDomino) === 'ace') roundState.acesPlayed.push(playedDomino.id);
 
                 currentPlayerIndex = (currentPlayerIndex + 1) % 4;
                 updateUI();
@@ -841,16 +1662,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function chooseSuit(domino) {
-        const isDouble = domino.pips1 === domino.pips2;
-        const canChoose = !isDouble || domino.id === '0-6';
-        if (!canChoose) return Promise.resolve(domino.pips1);
-        
+        if (domino.pips1 === domino.pips2 && domino.id !== '0-6') {
+             return Promise.resolve(domino.pips1);
+        }
         return new Promise(resolve => {
             suitModal.classList.remove('hidden');
             const choices = document.getElementById('suit-choice-buttons');
             choices.innerHTML = '';
-            const options = (domino.id === '0-6') ? [0, 6] : [domino.pips1, domino.pips2];
-
+            const options = (domino.id === '0-6') ? [0, 6] : [domino.pips1, domino.pips2].filter(p => p !== 1 || getDominoType(domino) !== 'trump');
             options.forEach(pips => {
                 const btn = document.createElement('button');
                 btn.className = 'btn'; btn.textContent = pips;
@@ -862,17 +1681,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function isMoveValid(domino, player) {
         if (!domino) return false;
-        if (trick.length === 0) return true;
+        if (trick.length === 0) return true; // Can lead anything
 
-        const hasDominoTheSuit = domino.pips1 === trickSuit || domino.pips2 === trickSuit;
-        
-        if (trickSuit !== 'trump') {
-            const playerHasSuit = player.hand.some(d => d.pips1 === trickSuit || d.pips2 === trickSuit);
-            return !playerHasSuit || hasDominoTheSuit;
-        } else {
+        const isDominoTrump = getDominoType(domino) === 'trump';
+        const isDominoOnSuit = domino.pips1 === trickSuit || domino.pips2 === trickSuit;
+
+        // Ja prasīts trumpis
+        if (trickSuit === 'trump') {
             const playerHasTrump = player.hand.some(d => getDominoType(d) === 'trump');
-            return !playerHasTrump || getDominoType(domino) === 'trump';
+            return !playerHasTrump || isDominoTrump;
         }
+    
+        // Pārbauda vai spēlētājam ir prasītais skaitlis (NEIEKĻAUJOT trumpjus)
+        const playerHasSuit = player.hand.some(d => 
+            (d.pips1 === trickSuit || d.pips2 === trickSuit) && getDominoType(d) !== 'trump'
+        );
+    
+        if (playerHasSuit) {
+            // Ja ir prasītais skaitlis, var likt TIKAI parasto kauliņu ar šo skaitli (NE trumpi)
+            return isDominoOnSuit && !isDominoTrump;
+        }
+    
+        // Ja NAV prasītā skaitļa, bet IR trumpis - OBLIGĀTI jāliek trumpis
+        const playerHasTrump = player.hand.some(d => getDominoType(d) === 'trump');
+        if (playerHasTrump) {
+            return isDominoTrump;
+        }
+    
+        // Ja nav ne prasītā, ne trumpja - var likt jebko
+        return true;
     }
     
     function getPlayerMove() {
@@ -893,12 +1730,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function determineTrickWinner(currentTrick) {
+    // HISTORY PANEL UPDATE: Function signature changed
+    function determineTrickWinner(currentTrick, suitForTrick) {
         if (!currentTrick || currentTrick.length === 0) return null;
         let highestRank = -1;
         let winnerPlay = null;
         for (const play of currentTrick) {
-            const rank = getDominoRank(play.domino, trickSuit);
+            const rank = getDominoRank(play.domino, suitForTrick);
             if (rank > highestRank) {
                 highestRank = rank;
                 winnerPlay = play;
@@ -909,10 +1747,33 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function endTrick() {
         return new Promise(async resolve => {
-            const winnerPlay = determineTrickWinner(trick);
+            recordTrickHistory(); // Record before determining winner for history UI
+            const winnerPlay = determineTrickWinner(trick, trickSuit);
+			
             if (winnerPlay) {
                 const winner = players[winnerPlay.playerIndex];
                 winner.tricksWon++;
+                const objective = determineObjective(winner);
+                if (objective === 'MUST_WIN' || objective === 'NEED_WIN') {
+                    showPlayerEmotion(winner.id, 'happy');
+                    if (winner.isCPU) showCPUComment(winner.id, getRandomComment('trickEnd', 'critical'));
+                } else if (objective === 'AVOID' || objective === 'AVOID_ALL') {
+                    showPlayerEmotion(winner.id, 'shocked');
+                    if (winner.isCPU) showCPUComment(winner.id, getRandomComment('trickEnd', 'bad'));
+                } else {
+                    showPlayerEmotion(winner.id, 'cool');
+                    if (winner.isCPU) showCPUComment(winner.id, getRandomComment('trickEnd', 'won'));
+                }
+    
+                trick.forEach(play => {
+                    if (play.playerIndex !== winnerPlay.playerIndex) {
+                        const loser = players[play.playerIndex];
+                        const loserObjective = determineObjective(loser);
+                        if (loserObjective === 'MUST_WIN') showPlayerEmotion(loser.id, 'angry');
+                        else if (loserObjective === 'AVOID_ALL') showPlayerEmotion(loser.id, 'happy');
+                        else showPlayerEmotion(loser.id, 'thinking');
+                    }
+                });
                 currentPlayerIndex = winner.id;
                 statusMessage.textContent = translations[currentLanguage].trickWon(winner.name);
                 
@@ -924,8 +1785,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 currentPlayerIndex = trickStartIndex; 
             }
-            lastTrick = [...trick];
-            updateUI();
+            
+            updateUI(); // Update UI to show history immediately
             await sleep(2500 / autoplaySpeed);
             resolve();
         });
@@ -937,32 +1798,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const roundResultsBody = document.getElementById('round-results-body');
         roundResultsBody.innerHTML = ''; 
 
+        let playerWon = false;
         players.forEach(p => {
             let roundPoints = 0;
             let calculationText = '';
 
             if (p.bid === p.tricksWon) {
-                if (p.bid === 7) {
-                    roundPoints = (p.bid * 15) + 30;
-                    calculationText = `(${p.bid} x 15) + 30 bonuss = ${roundPoints}`;
-                } else {
-                    roundPoints = p.bid * 15;
-                    calculationText = `${p.bid} x 15 = ${roundPoints}`;
-                }
+                roundPoints = p.bid * 15;
+                if (p.bid === 7) { roundPoints += 30; calculationText = `(7 x 15) + 30 bonuss = ${roundPoints}`; } 
+                else { calculationText = `${p.bid} x 15 = ${roundPoints}`; }
             } else {
-                if (p.bid === 7 && p.tricksWon < 7) {
-                    roundPoints = -30;
-                    calculationText = `Neizpildīts 7 stiķu solījums = ${roundPoints}`;
-                } else if (p.tricksWon < p.bid) {
-                    const tricksMissed = p.bid - p.tricksWon;
-                    roundPoints = -5 * tricksMissed;
-                    calculationText = `-5 x ${tricksMissed} nepaņemti stiķi = ${roundPoints}`;
-                } else {
-                    roundPoints = p.tricksWon * 5;
-                    calculationText = `${p.tricksWon} x 5 = ${roundPoints}`;
-                }
+                if (p.bid === 7) { roundPoints = -30; calculationText = `Neizpildīts 7 stiķu solījums = -30`; } 
+                else if (p.tricksWon < p.bid) { roundPoints = -5 * (p.bid - p.tricksWon); calculationText = `-5 x ${p.bid - p.tricksWon} nepaņemti = ${roundPoints}`; } 
+                else { roundPoints = p.tricksWon * 5; calculationText = `${p.tricksWon} x 5 = ${roundPoints}`; }
             }
             p.score += roundPoints;
+            if (p.id === 3 && roundPoints > 0) playerWon = true;
 
             const pointsClass = roundPoints >= 15 ? 'text-green-400' : (roundPoints > 0 ? 'text-yellow-400' : 'text-red-400');
             const resultRow = document.createElement('div');
@@ -970,19 +1821,14 @@ document.addEventListener('DOMContentLoaded', () => {
             resultRow.innerHTML = `
                 <div class="flex justify-between items-center">
                     <span class="player-name">${p.name}</span>
-                    <span class="points-calculation ${pointsClass}">
-                        ${roundPoints >= 0 ? '+' : ''}${roundPoints} ${translations[currentLanguage].pointsSuffix}
-                    </span>
+                    <span class="points-calculation ${pointsClass}">${roundPoints >= 0 ? '+' : ''}${roundPoints} ${translations[currentLanguage].pointsSuffix}</span>
                 </div>
-                <div class="bid-info">
-                    ${translations[currentLanguage].roundResultText(p.bid, p.tricksWon)}
-                </div>
-                <div class="bid-info text-xs italic opacity-80">
-                    ${calculationText}
-                </div>`;
+                <div class="bid-info">${translations[currentLanguage].roundResultText(p.bid, p.tricksWon)}</div>
+                <div class="bid-info text-xs italic opacity-80">${calculationText}</div>`;
             roundResultsBody.appendChild(resultRow);
         });
         
+        soundManager.play(playerWon ? 'winGame' : 'loseGame');
         updateScoreboard(); 
         roundOverModal.classList.remove('hidden'); 
     }
@@ -991,49 +1837,36 @@ document.addEventListener('DOMContentLoaded', () => {
         gameState = 'gameover';
         const sortedPlayers = [...players].sort((a,b) => b.score - a.score);
         const winner = sortedPlayers[0];
+        
+        if (winner.id === 3) gameStats.wins++;
+        gameStats.gamesPlayed++;
+        gameStats.totalScore += players[3].score;
+        saveStats();
+
         document.getElementById('game-over-winner').textContent = translations[currentLanguage].winnerIs(winner.name, winner.score);
         const finalScoresEl = document.getElementById('final-scores');
         finalScoresEl.innerHTML = `<h4 class="text-lg font-bold mb-2">${translations[currentLanguage].finalScoresTitle}</h4>`;
         sortedPlayers.forEach(p => finalScoresEl.innerHTML += `<p class="flex justify-between"><span>${p.name}:</span> <span>${p.score} ${translations[currentLanguage].pointsSuffix}</span></p>`);
         
-        const animationContainer = document.getElementById('winner-animation-container');
-        animationContainer.innerHTML = '<div class="winner-cup">🏆</div>';
+        document.getElementById('winner-animation-container').innerHTML = '<div class="winner-cup">🏆</div>';
         gameOverModal.classList.remove('hidden');
     }
 
     function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-    // --- GEMINI API ---
     async function callGemini(prompt) {
         const geminiModalContent = document.getElementById('gemini-modal-content');
         geminiModal.classList.remove('hidden');
         geminiModalContent.innerHTML = `<div class="loader-container flex justify-center items-center"><div class="loader"></div></div>`;
-
-        const apiKey = ""; // API key is managed by the environment
+        const apiKey = ""; 
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-        
-        let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-        const payload = { contents: chatHistory };
-
         try {
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            if (!response.ok) {
-                throw new Error(`API error: ${response.statusText}`);
-            }
+            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }] }) });
+            if (!response.ok) throw new Error(`API error: ${response.statusText}`);
             const result = await response.json();
-            
-            if (result.candidates && result.candidates.length > 0 &&
-                result.candidates[0].content && result.candidates[0].content.parts &&
-                result.candidates[0].content.parts.length > 0) {
-                const text = result.candidates[0].content.parts[0].text;
-                geminiModalContent.innerHTML = `<p class="whitespace-pre-wrap">${text}</p>`;
-            } else {
-                 throw new Error("Invalid response structure from API.");
-            }
+            if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
+                geminiModalContent.innerHTML = `<p class="whitespace-pre-wrap">${result.candidates[0].content.parts[0].text}</p>`;
+            } else { throw new Error("Invalid response structure from API."); }
         } catch (error) {
             console.error("Gemini API call failed:", error);
             geminiModalContent.textContent = "Atvainojiet, radās kļūda, sazinoties ar AI padomdevēju. Lūdzu, mēģiniet vēlāk.";
@@ -1044,82 +1877,79 @@ document.addEventListener('DOMContentLoaded', () => {
         const player = players[3];
         const handString = player.hand.map(d => d.originalId).join(', ');
         const trickString = trick.map(p => `${p.domino.originalId} (spēlēja ${players[p.playerIndex].name})`).join(', ') || 'nav';
-        
-        const prompt = `You are a world-class Domino Pokers strategy expert. Your goal is to advise a human player to make the best possible move. The game is similar to Spades or Bridge. Trumps are very powerful. Aces (doubles) are also powerful. The player must follow suit if they can. Here is the current situation:
-- My hand: [${handString}]
-- I bid ${player.bid} and I have already won ${player.tricksWon} tricks.
-- The other players' bids are: Jānis (${players[0].bid}), Pēteris (${players[1].bid}), Andris (${players[2].bid}).
-- It is my turn to play.
-- Dominoes already played in this trick: ${trickString}
-- The suit to follow is: ${trickSuit === null ? 'any' : (trickSuit === 'trump' ? 'trumps' : trickSuit)}.
+        const prompt = `Esi pasaules klases Domino pokera stratēģijas eksperts. Tavs mērķis ir ieteikt cilvēkam labāko gājienu. Spēle līdzinās Zolei vai Bridžam. Trumpji ir ļoti spēcīgi. Dūži (dubultie) arī ir spēcīgi. Spēlētājam ir jāseko mastam, ja viņš var. Šī ir pašreizējā situācija:
+- Mani kauliņi: [${handString}]
+- Es solīju ${player.bid} un esmu paņēmis ${player.tricksWon} stiķus.
+- Citu spēlētāju solījumi: Jānis (${players[0].bid}), Pēteris (${players[1].bid}), Andris (${players[2].bid}).
+- Ir mans gājiens.
+- Šajā stiķī jau nospēlētie kauliņi: ${trickString}
+- Masts, kuram jāseko: ${trickSuit === null ? 'jebkurš' : (trickSuit === 'trump' ? 'trumpji' : trickSuit)}.
 
-Based on this, what is the best domino for me to play from my hand and why? Provide a concise strategic reason. Explain your choice in Latvian.`;
-
+Pamatojoties uz šo, kurš ir labākais kauliņš, ko man spēlēt no savas rokas un kāpēc? Sniedz kodolīgu stratēģisku pamatojumu latviešu valodā.`;
         document.getElementById('gemini-modal-title').textContent = translations[currentLanguage].adviceTitle;
         callGemini(prompt);
     }
     
     function handleAnalyzeRound() {
-        const results = players.map(p => {
-            return `- Spēlētājs '${p.name}' solīja ${p.bid}, paņēma ${p.tricksWon}.`;
-        }).join('\n');
-
-        const prompt = `You are a sharp-witted Domino Pokers commentator. Briefly analyze the round that just finished. Be insightful and a little entertaining. Here are the results:\n${results}\n\nProvide a short, one-paragraph analysis of the round in Latvian. Who was the star player and who made a blunder?`;
-        
+        const results = players.map(p => `- Spēlētājs '${p.name}' solīja ${p.bid}, paņēma ${p.tricksWon}.`).join('\n');
+        const prompt = `Esi asprātīgs Domino pokera komentētājs. Īsi analizē tikko pabeigto partiju. Esi ieskatu sniedzošs un nedaudz izklaidējošs. Šeit ir rezultāti:\n${results}\n\nSniedz īsu, vienas rindkopas analīzi par partiju latviešu valodā. Kurš bija partijas zvaigzne un kurš pieļāva lielu kļūdu?`;
         document.getElementById('gemini-modal-title').textContent = translations[currentLanguage].analysisTitle;
         callGemini(prompt);
     }
     
-    // --- EVENT LISTENERS ---
-    function updateAutoplayButton() {
-        autoplayBtn.classList.toggle('btn-toggle-on', isPlayerAutoplaying);
-        autoplayBtn.textContent = isPlayerAutoplaying 
-            ? translations[currentLanguage].disableAutoplay 
-            : translations[currentLanguage].enableAutoplay;
+    function saveStats() { localStorage.setItem('dominoPokerStats', JSON.stringify(gameStats)); }
+    function loadStats() {
+        const savedStats = localStorage.getItem('dominoPokerStats');
+        if (savedStats) gameStats = JSON.parse(savedStats);
+    }
+    function showStats() {
+        const contentEl = document.getElementById('stats-modal-content');
+        document.getElementById('stats-modal-title').textContent = translations[currentLanguage].statsTitle;
+        contentEl.innerHTML = `
+            <p>${translations[currentLanguage].gamesPlayed}: <span class="stat-value">${gameStats.gamesPlayed}</span></p>
+            <p>${translations[currentLanguage].wins}: <span class="stat-value">${gameStats.wins}</span></p>
+            <p>${translations[currentLanguage].totalScore}: <span class="stat-value">${gameStats.totalScore}</span></p>`;
+        statsModal.classList.remove('hidden');
     }
 
+    function updateAutoplayButton() {
+        autoplayBtn.classList.toggle('btn-toggle-on', isPlayerAutoplaying);
+        autoplayBtn.textContent = isPlayerAutoplaying ? translations[currentLanguage].disableAutoplay : translations[currentLanguage].enableAutoplay;
+    }
     function toggleAutoplay() {
         isPlayerAutoplaying = !isPlayerAutoplaying;
         players[3].name = isPlayerAutoplaying ? `${translations[currentLanguage].you} (CPU)` : translations[currentLanguage].you;
         updateAutoplayButton();
         updatePlayerHandClickability();
     }
-    
     function setAutoplaySpeed(speed) {
         autoplaySpeed = speed;
-        document.getElementById('speed-1x').classList.toggle('active', speed === 1);
-        document.getElementById('speed-2x').classList.toggle('active', speed === 2);
-        document.getElementById('speed-3x').classList.toggle('active', speed === 3);
+        document.querySelectorAll('.speed-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`speed-${speed}x`).classList.add('active');
     }
     document.getElementById('speed-1x').addEventListener('click', () => setAutoplaySpeed(1));
     document.getElementById('speed-2x').addEventListener('click', () => setAutoplaySpeed(2));
     document.getElementById('speed-3x').addEventListener('click', () => setAutoplaySpeed(3));
-
     document.getElementById('start-game-btn').addEventListener('click', () => {
         document.getElementById('rounds-modal').classList.add('hidden');
         totalRounds = parseInt(document.getElementById('rounds-input').value) || 5;
+        cpuDifficulty = document.getElementById('difficulty-select').value;
         runGame();
     });
     document.getElementById('play-again-btn').addEventListener('click', () => {
         gameOverModal.classList.add('hidden');
         document.getElementById('rounds-modal').classList.remove('hidden');
     });
-
     document.getElementById('next-round-btn').addEventListener('click', () => {
         roundOverModal.classList.add('hidden');
-        if (resolveNextRound) {
-            resolveNextRound();
-        }
+        if (resolveNextRound) resolveNextRound();
     });
-
     autoplayBtn.addEventListener('click', toggleAutoplay);
     document.getElementById('lang-lv').addEventListener('click', () => setLanguage('lv'));
     document.getElementById('lang-en').addEventListener('click', () => setLanguage('en'));
-
     geminiAdviceBtn.addEventListener('click', handleGetAdvice);
     geminiAnalysisBtn.addEventListener('click', handleAnalyzeRound);
     document.getElementById('gemini-modal-close-btn').addEventListener('click', () => geminiModal.classList.add('hidden'));
-    
     helpBtn.addEventListener('click', () => {
         const rulesData = rules[currentLanguage];
         document.getElementById('rules-modal-title').textContent = rulesData.title;
@@ -1127,69 +1957,132 @@ Based on this, what is the best domino for me to play from my hand and why? Prov
         rulesModal.classList.remove('hidden');
     });
     document.getElementById('rules-modal-close-btn').addEventListener('click', () => rulesModal.classList.add('hidden'));
-
+    statsBtn.addEventListener('click', showStats);
+    document.getElementById('stats-modal-close-btn').addEventListener('click', () => statsModal.classList.add('hidden'));
+    loadStats();
     setLanguage('lv');
 
-    // ===================================================
-    // CPU STRATĒĢIJA
-    // ===================================================
+    // --- CPU STRATEGY ---
     function getCPUBid(player) {
+        const handStrength = evaluateHandStrength(player.hand);
         let estimatedTricks = 0;
-        player.hand.forEach(domino => {
-            const type = getDominoType(domino);
-            if (type === 'trump') {
-                const trumpRank = trumps.indexOf(domino.id);
-                if (trumpRank <= 2) estimatedTricks += 1.0;
-                else if (trumpRank <= 4) estimatedTricks += 0.7;
-                else estimatedTricks += 0.4;
-            } else if (type === 'ace') {
-                const suit = domino.pips1;
-                const supportCards = player.hand.filter(d => d.id !== domino.id && (d.pips1 === suit || d.pips2 === suit)).length;
-                let aceSafety = 0.15;
-                if (supportCards === 1) aceSafety = 0.5;
-                if (supportCards === 2) aceSafety = 0.8;
-                if (supportCards >= 3) aceSafety = 0.95;
-                estimatedTricks += aceSafety;
-            }
+        const myTrumps = player.hand.filter(d => getDominoType(d) === 'trump');
+        myTrumps.forEach(t => { estimatedTricks += 0.45 + (0.5 * (trumps.length - trumps.indexOf(t.id)) / trumps.length); });
+        player.hand.filter(d => getDominoType(d) === 'ace').forEach(ace => {
+            const support = getSuitCount(player.hand, ace.pips1) - 1;
+            let prob = 0.2 + (0.3 * (aces.length - aces.indexOf(ace.id)) / aces.length);
+            if (support >= 3) prob += 0.5; else if (support === 2) prob += 0.3; else if (support === 1) prob += 0.1;
+            if (myTrumps.length === 0) prob -= 0.2; else if (myTrumps.length >= 3) prob += 0.1;
+            estimatedTricks += Math.min(0.95, prob);
         });
-        const trumpCount = player.hand.filter(d => getDominoType(d) === 'trump').length;
-        if (trumpCount === 0 && estimatedTricks > 1.5) estimatedTricks -= 0.75;
-        if (trumpCount >= 4) estimatedTricks += 0.5;
-        return Math.max(0, Math.min(7, Math.round(estimatedTricks)));
+        
+        let bid = Math.round(estimatedTricks);
+        if (cpuDifficulty === 'easy') { bid = Math.max(0, bid - 1); if (Math.random() < 0.3) bid += Math.random() < 0.5 ? 1 : -1; } 
+        else if (cpuDifficulty === 'hard') {
+            if (handStrength > 25 && bid < 3) bid = 3;
+            if (myTrumps.length >= 4 && bid < 4) bid = Math.min(4, bid + 1);
+        }
+        if (bid === 1 && handStrength < 15 && Math.random() < (cpuDifficulty === 'hard' ? 0.4 : 0.2)) bid = 0;
+        return Math.max(0, Math.min(7, bid));
     }
-    function getCPUMove(player) {
+    
+	function getCPUMove(player) {
         const validMoves = player.hand.filter(d => isMoveValid(d, player));
-        let objective = (player.bid === 0) ? 'DISRUPT' : (player.tricksWon < player.bid ? 'WIN' : 'LOSE');
-        
-        if (trick.length === 0) {
-            let move, suitToLead = -1;
-            if (objective === 'WIN') {
-                const potentialWinners = validMoves.filter(d => getDominoType(d) === 'ace' || getDominoType(d) === 'trump').sort((a, b) => getDominoRank(b, null) - getDominoRank(a, null));
-                move = potentialWinners.length > 0 ? potentialWinners[0] : validMoves.sort((a,b) => getDominoRank(b, null) - getDominoRank(a, null))[0];
-            } else {
-                const safeToLose = validMoves.filter(d => getDominoType(d) === 'normal');
-                move = safeToLose.length > 0 ? safeToLose.sort((a,b) => getDominoRank(a, null) - getDominoRank(b, null))[0] : validMoves.sort((a,b) => getDominoRank(a, null) - getDominoRank(b, null))[0];
-            }
-            if (getDominoType(move) !== 'trump') {
-                if(move.id === '0-6') { suitToLead = (objective === 'WIN') ? 0 : 6; } 
-                else { suitToLead = roundState.suitsPlayed[move.pips1] <= roundState.suitsPlayed[move.pips2] ? move.pips1 : move.pips2; }
-            }
-            return { domino: move, suitToLead: suitToLead };
+        if (validMoves.length === 0) return { domino: player.hand[0], suitToLead: player.hand[0].pips1 }; // Fallback
+        if (validMoves.length === 1) return { domino: validMoves[0], suitToLead: getDominoType(validMoves[0]) === 'trump' ? 'trump' : validMoves[0].pips1 };
+    
+        const objective = determineObjective(player);
+        const gameContext = {
+            trickNumber, remainingTricks: 7 - trickNumber, myTricksNeeded: player.bid - player.tricksWon,
+            opponents: players.filter(p => p.id !== player.id), remainingTrumps: countRemainingTrumps(),
+            bidAnalysis: analyzeOpponentsBids()
+        };
+    
+        return trick.length === 0 ? makeLeadDecision(player, validMoves, objective, gameContext) : makeFollowDecision(player, validMoves, objective, gameContext);
+    }
+	
+	function makeLeadDecision(player, validMoves, objective, context) {
+        let bestMove = null, bestSuit = -1;
+        const myTrumps = validMoves.filter(d => getDominoType(d) === 'trump').sort((a,b)=>trumps.indexOf(a.id)-trumps.indexOf(b.id));
+        const myAces = validMoves.filter(d => getDominoType(d) === 'ace').sort((a,b)=>aces.indexOf(a.id)-aces.indexOf(b.id));
+        const normal = validMoves.filter(d => getDominoType(d) === 'normal');
+
+        if (context.trickNumber === 1 && myAces.length > 0) return { domino: myAces[0], suitToLead: myAces[0].pips1 };
+    
+        if (objective === 'MUST_WIN' || objective === 'NEED_WIN') {
+            if (myTrumps.length > 0 && context.remainingTrumps <= 3) bestMove = myTrumps[0];
+            else if (myAces.length > 0) bestMove = myAces[0];
+            else if (normal.length > 0) bestMove = selectLongSuitLead(player, normal);
+        } else if (objective === 'AVOID_ALL' || objective === 'AVOID') {
+            if (normal.length > 0) bestMove = selectShortSuitLead(player, normal);
+            else if (myAces.length > 0) bestMove = myAces[myAces.length - 1]; // Weakest ace
+            else bestMove = myTrumps[myTrumps.length - 1]; // Weakest trump
         }
         
-        const winningMoves = validMoves.filter(move => determineTrickWinner([...trick, { domino: move, playerIndex: player.id }]).playerIndex === player.id);
-        const losingMoves = validMoves.filter(move => !winningMoves.some(w => w.originalId === move.originalId));
-        
-        if (objective === 'WIN') {
-            if (winningMoves.length > 0) return { domino: winningMoves.sort((a, b) => getDominoRank(a, trickSuit) - getDominoRank(b, trickSuit))[0] };
-            return { domino: validMoves.sort((a, b) => getDominoRank(a, null) - getDominoRank(b, null))[0] };
-        } else if (objective === 'LOSE') {
-            if (losingMoves.length > 0) return { domino: losingMoves.sort((a, b) => getDominoRank(b, null) - getDominoRank(a, null))[0] };
-            return { domino: winningMoves.sort((a, b) => getDominoRank(a, trickSuit) - getDominoRank(b, trickSuit))[0] };
-        } else { // DISRUPT
-            if (winningMoves.length > 0) return { domino: winningMoves.sort((a, b) => getDominoRank(b, trickSuit) - getDominoRank(a, trickSuit))[0] };
-            return { domino: losingMoves.length > 0 ? losingMoves.sort((a, b) => getDominoRank(a, null) - getDominoRank(b, null))[0] : validMoves[0] };
+        if (!bestMove) {
+             bestMove = cpuDifficulty === 'hard' ? makeStrategicLead(player, validMoves, context) : (normal.length > 0 ? normal[Math.floor(normal.length/2)] : validMoves[0]);
         }
+        
+        if (getDominoType(bestMove) !== 'trump') {
+            bestSuit = (bestMove.pips1 === bestMove.pips2) ? bestMove.pips1 : (getSuitCount(player.hand, bestMove.pips1) >= getSuitCount(player.hand, bestMove.pips2) ? bestMove.pips1 : bestMove.pips2);
+        }
+        return { domino: bestMove, suitToLead: bestSuit };
+    }
+
+    function makeFollowDecision(player, validMoves, objective, context) {
+        const canWin = validMoves.some(m => determineTrickWinner([...trick, { domino: m, playerIndex: player.id }], trickSuit).playerIndex === player.id);
+        const trickAnalysis = analyzeTrick();
+    
+        if (objective === 'MUST_WIN' || objective === 'NEED_WIN') {
+            return { domino: canWin ? selectWinningMove(player, validMoves, 'minimal') : selectDiscardMove(player, validMoves, 'save_winners') };
+        } else if (objective === 'AVOID_ALL' || objective === 'AVOID') {
+            return { domino: !canWin ? selectDiscardMove(player, validMoves, 'dump_winners') : selectWinningMove(player, validMoves, 'minimal') };
+        } else { // Flexible
+            if (cpuDifficulty === 'hard') return makeStrategicFollow(player, validMoves, context, trickAnalysis);
+            return { domino: canWin && Math.random() < 0.6 ? selectWinningMove(player, validMoves, 'balanced') : selectDiscardMove(player, validMoves, 'balanced') };
+        }
+    }
+
+    function selectLongSuitLead(player, doms) { /* ... */ return doms.sort((a,b) => getSuitCount(player.hand, a.pips1) - getSuitCount(player.hand, b.pips1))[0] || doms[0]; }
+    function selectShortSuitLead(player, doms) { /* ... */ return doms.sort((a,b) => (a.pips1 + a.pips2 + getSuitCount(player.hand, a.pips1)*5) - (b.pips1 + b.pips2 + getSuitCount(player.hand, b.pips1)*5))[0] || doms[0]; }
+    
+    function selectWinningMove(player, moves, strategy) {
+        const sorted = moves.filter(m => determineTrickWinner([...trick, { domino: m, playerIndex: player.id }], trickSuit).playerIndex === player.id)
+                            .sort((a, b) => getDominoRank(a, trickSuit) - getDominoRank(b, trickSuit));
+        if (sorted.length === 0) return selectDiscardMove(player, moves, 'balanced'); // Fallback
+        if (strategy === 'minimal') return sorted[0];
+        if (strategy === 'maximal') return sorted[sorted.length - 1];
+        return sorted[Math.floor(sorted.length / 2)];
+    }
+
+    function selectDiscardMove(player, moves, strategy) {
+        const nonWinning = moves.filter(m => determineTrickWinner([...trick, { domino: m, playerIndex: player.id }], trickSuit).playerIndex !== player.id);
+        const list = nonWinning.length > 0 ? nonWinning : moves;
+        const getVal = d => (getDominoType(d) === 'trump' ? 100 : (getDominoType(d) === 'ace' ? 50 : 0)) + d.pips1 + d.pips2;
+        if (strategy === 'save_winners') return list.sort((a, b) => getVal(a) - getVal(b))[0];
+        if (strategy === 'dump_winners') return list.sort((a, b) => getVal(b) - getVal(a))[0];
+        return list[Math.floor(list.length/2)];
+    }
+
+    function makeStrategicLead(player, validMoves, context) {
+        const dangerousOpponent = context.opponents.find(opp => opp.bid - opp.tricksWon >= context.remainingTricks - 1);
+        if (dangerousOpponent) {
+            for (let suit = 6; suit >= 0; suit--) {
+                if (getPlayerSuitExhaustion(dangerousOpponent.id, suit)) {
+                    const move = validMoves.find(d => getDominoType(d) === 'normal' && (d.pips1 === suit || d.pips2 === suit));
+                    if (move) return move;
+                }
+            }
+        }
+        return validMoves[Math.floor(validMoves.length / 2)];
+    }
+
+    function makeStrategicFollow(player, validMoves, context, trickAnalysis) {
+        const canWin = validMoves.some(m => determineTrickWinner([...trick, { domino: m, playerIndex: player.id }], trickSuit).playerIndex === player.id);
+        const desperateOpponentWinning = context.opponents.find(opp => opp.id === trickAnalysis.expectedWinner && opp.bid - opp.tricksWon === context.remainingTricks);
+        if (desperateOpponentWinning && canWin) return { domino: selectWinningMove(player, validMoves, 'minimal') };
+        if (canWin && player.tricksWon < player.bid) return { domino: selectWinningMove(player, validMoves, 'minimal') };
+        return { domino: selectDiscardMove(player, validMoves, 'balanced') };
     }
 });
 </script>
