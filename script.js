@@ -71,12 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
             title: "Domino Poker Rules",
             content: `
                 <h3>Game Objective</h3>
-                <p>Domino Poker is an individual domino game for four players who aim to score points by accurately taking previously bid tricks. Strategic planning and interference with opponents are essential for winning.</p>
+                <p>Domino Poker is an individual domino game for four players who aim to score points by accurately taking previously bid rounds. Strategic planning and interference with opponents are essential for winning.</p>
                 <h3>Gameplay</h3>
                 <h4>1. Shuffling and Drawing</h4>
                 <p>Each player draws 7 dominoes from a shuffled 28-tile set.</p>
                 <h4>2. Bidding</h4>
-                <p>Each player bids in turn how many tricks they plan to take (from 0 to 7). There is only one round of bidding.</p>
+                <p>Each player bids in turn how many rounds they plan to take (from 0 to 7). There is only one round of bidding.</p>
                 <h4>3. Play</h4>
 				<p>If a move is made with a trump, everyone must play a trump (if they have one). If no trump is available, any tile may be discarded.</p>
 				<p>If a move is made with an ace, the corresponding tile must be played. If such a tile is unavailable, a trump must be played. If no trump is available, any tile may be discarded.</p>
@@ -88,11 +88,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <ul><li>6-6, 5-5, 4-4, 3-3, 2-2, 0-6. (When leading with 0-6, the player can choose to call for either the '0' or '6' suit).</li></ul>
                 <h3>Scoring</h3>
                 <ul>
-                    <li><b>+15 points</b> for each trick taken if the bid was met exactly (e.g., bid 3, took 3 = 45 points).</li>
-                    <li><b>+5 points</b> for each trick taken if the bid was exceeded (e.g., bid 2, took 4 = 20 points).</li>
-                    <li><b>-5 points</b> for each trick missed below the bid (e.g., bid 4, took 2 = -10 points).</li>
-                    <li><b>+30 bonus points</b> for bidding and taking all 7 tricks (total 7*15+30=135 points).</li>
-                    <li><b>-30 points</b> for bidding 7 tricks but failing to take them all.</li>
+                    <li><b>+15 points</b> for each round taken if the bid was met exactly (e.g., bid 3, took 3 = 45 points).</li>
+                    <li><b>+5 points</b> for each round taken if the bid was exceeded (e.g., bid 2, took 4 = 20 points).</li>
+                    <li><b>-5 points</b> for each round missed below the bid (e.g., bid 4, took 2 = -10 points).</li>
+                    <li><b>+30 bonus points</b> for bidding and taking all 7 rounds (total 7*15+30=135 points).</li>
+                    <li><b>-30 points</b> for bidding 7 rounds but failing to take them all.</li>
                 </ul>`
         }
     };
@@ -117,13 +117,13 @@ document.addEventListener('DOMContentLoaded', () => {
             you: 'You', bid: 'Bid', taken: 'Taken', round: 'Round', scoreboard: 'Scoreboard', howManyRounds: 'How many rounds to play?',
             startGame: 'Start Game', chooseSuitLead: 'Which number to lead with?', roundResults: 'Point Calculation', continue: 'Continue',
             gameOver: 'Game Over!', playAgain: 'Play Again', mustFollow: 'Invalid move! You must follow suit or play a trump.',
-            playerTurn: (name) => `${name}'s turn...`, bidding: (name) => `${name} is bidding...`, bidMade: (name, bid) => `${name} bids ${bid}`,
-            gameStarts: (name) => `The game begins! ${name} starts.`, trickWon: (name) => `${name} takes the trick!`, roundOver: 'Round over! Calculating scores...',
-            shuffling: 'Shuffling dominoes...', bidPrompt: 'How many tricks will you bid?',
+            playerTurn: (name) => `${name}'s turn...`, bidding: (name) => `${name} is bidding...`, bidMade: (name, bid) => `${name} bids ${bid} dominoes`,
+            gameStarts: (name) => `The game begins! ${name} starts.`, trickWon: (name) => `${name} takes the round!`, roundOver: 'Round over! Calculating scores...',
+            shuffling: 'Shuffling dominoes...', bidPrompt: 'How many dominoes will you take?',
             winnerIs: (name, score) => `The winner is ${name} with ${score} points!`, finalScoresTitle: 'Final Scores:', points: 'points',
-            roundResultText: (bid, taken) => `Bid ${bid}, Took ${taken}`, pointsSuffix: 'points', suitLead: (suit) => `Suit to follow: ${suit}`,
+            roundResultText: (bid, taken) => `Bid ${bid} dominoes, Took ${taken} dominoes`, pointsSuffix: 'points', suitLead: (suit) => `Suit to follow: ${suit}`,
             trumpSuit: 'Trumps', enableAutoplay: 'Enable CPU', disableAutoplay: 'Disable CPU',
-            trickHistory: 'Trick History', noHistory: 'No tricks played yet.', speed: 'Speed:',
+            trickHistory: 'Round History', noHistory: 'No rounds played yet.', speed: 'Speed:',
             getAdvice: 'Get Advice', analyzeRound: 'Analyze Round', adviceTitle: 'Gemini Advice', analysisTitle: 'Gemini Analysis',
             difficulty: 'Difficulty Level', easy: 'Easy', normal: 'Normal', hard: 'Hard',
             statsTitle: 'Your Statistics', gamesPlayed: 'Games Played', wins: 'Wins', totalScore: 'Total Score'
@@ -160,13 +160,13 @@ document.addEventListener('DOMContentLoaded', () => {
             playing: {
                 leadStrong: ["Starting strong!", "This will win!", "My best move.", "Attack!"],
                 leadWeak: ["Let's see...", "Maybe someone beats it.", "Starting soft.", "Safe play."],
-                followWin: ["Taking this!", "My trick!", "No one beats this.", "Perfect!"],
+                followWin: ["Taking this!", "My round!", "No one beats this.", "Perfect!"],
                 followLose: ["Let others take it.", "Saving strength.", "Losing for now.", "Not worth it."],
-                mustWin: ["Must take this!", "Critical trick!", "Can't lose!", "Need to win!"],
+                mustWin: ["Must take this!", "Critical round!", "Can't lose!", "Need to win!"],
                 frustrated: ["Oh no!", "Not as planned...", "Why?", "Not good!"]
             },
             trickEnd: {
-                won: ["Yes! Got it!", "As planned!", "Nice one!", "My trick! 💪"],
+                won: ["Yes! Got it!", "As planned!", "Nice one!", "My round! 💪"],
                 lost: ["Oh well...", "Keep it.", "Next time.", "Hmm..."],
                 critical: ["Perfect!", "Exactly what I needed!", "Great!", "Plan works! 🎯"],
                 bad: ["Oh no!", "That's bad!", "Problems...", "Really? 😰"]
